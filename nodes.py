@@ -14,6 +14,18 @@ from omegaconf import OmegaConf
 from PIL import Image
 import shutil
 
+
+
+if "LatentSync" not in folder_paths.folder_names_and_paths:
+    folder_paths.folder_names_and_paths["LatentSync"] = (
+        [
+            os.path.join(folder_paths.models_dir, "LatentSync"),
+        ],
+        folder_paths.supported_pt_extensions,
+    )
+    if os.path.exists('/stable-diffusion-cache/models/LatentSync'):
+        folder_paths.add_model_folder_path("LatentSync", "/stable-diffusion-cache/models/LatentSync")
+
 def import_inference_script(script_path):
     """Import a Python file as a module using its file path."""
     if not os.path.exists(script_path):
@@ -129,17 +141,16 @@ def save_and_reload_frames(frames, temp_dir):
     return stacked.to(device='cpu', dtype=torch.float32)
 
 def setup_models():
-    cur_dir = get_ext_dir()
-    ckpt_dir = os.path.join(cur_dir, "checkpoints")
+    ckpt_dir = os.path.join(os.path.join(folder_paths.models_dir, "LatentSync"))
     whisper_dir = os.path.join(ckpt_dir, "whisper")
     
     # Create directories if they don't exist
     os.makedirs(ckpt_dir, exist_ok=True)
     os.makedirs(whisper_dir, exist_ok=True)
-    
-    unet_path = os.path.join(ckpt_dir, "latentsync_unet.pt")
-    whisper_path = os.path.join(whisper_dir, "tiny.pt")
-    
+
+    unet_path = folder_paths.get_full_path("LatentSync", "latentsync_unet.pt")
+    whisper_path = folder_paths.get_full_path("LatentSync", "whisper/tiny.pt")
+        
     if not (os.path.exists(unet_path) and os.path.exists(whisper_path)):
         print("Downloading required model checkpoints... This may take a while.")
         try:
@@ -159,7 +170,6 @@ def setup_models():
 
 class LatentSyncNode:
     def __init__(self):
-        check_and_install_dependencies()
         setup_models()
 
 
@@ -179,7 +189,8 @@ class LatentSyncNode:
 
     def inference(self, images, audio, seed):
         cur_dir = get_ext_dir()
-        ckpt_dir = os.path.join(cur_dir, "checkpoints")
+        ckpt_dir = os.path.join(os.path.join(folder_paths.models_dir, "LatentSync"))
+
         output_dir = folder_paths.get_output_directory()
         temp_dir = os.path.join(output_dir, "temp_frames")
         os.makedirs(output_dir, exist_ok=True)
