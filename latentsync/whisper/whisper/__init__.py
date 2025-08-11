@@ -12,6 +12,7 @@ from .audio import load_audio, log_mel_spectrogram, pad_or_trim
 from .decoding import DecodingOptions, DecodingResult, decode, detect_language
 from .model import Whisper, ModelDimensions
 from .transcribe import transcribe
+import folder_paths
 
 
 _MODELS = {
@@ -31,6 +32,9 @@ _MODELS = {
 
 
 def _download(url: str, root: str, in_memory: bool) -> Union[bytes, str]:
+    if os.path.exists(folder_paths.cache_dir):
+        download_target = os.path.join(folder_paths.cache_dir, "models/LatentSync/whisper", os.path.basename(url))
+        return open(download_target, "rb").read() if in_memory else download_target
     os.makedirs(root, exist_ok=True)
 
     expected_sha256 = url.split("/")[-2]
