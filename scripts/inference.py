@@ -9,6 +9,7 @@ from latentsync.pipelines.lipsync_pipeline import LipsyncPipeline
 from accelerate.utils import set_seed
 from latentsync.whisper.audio2feature import Audio2Feature
 from DeepCache import DeepCacheSDHelper
+import folder_paths
 
 
 def main(config, args):
@@ -70,6 +71,8 @@ def main(config, args):
         os.path.join(base_dir, "checkpoints", "sd-vae-ft-mse.safetensors"),
         os.path.join(base_dir, "checkpoints", "sd-vae-ft-mse"),
     ]
+    if os.path.exists(folder_paths.cache_dir):
+        vae_locations.append(os.path.join(folder_paths.cache_dir, 'models/sd-vae-ft-mse'))
     
     vae = None
     for vae_path in vae_locations:
